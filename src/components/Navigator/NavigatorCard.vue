@@ -15,7 +15,7 @@
         <div class="head-wrapper">
           <button
             aria-label="Close documentation navigator"
-            class="close-card-mobile"
+            class="close-card"
             @click="$emit('close')"
           >
             <SidenavIcon class="icon-inline close-icon" />
@@ -72,7 +72,9 @@
             {{ politeAriaLive }}
           </div>
           <div aria-live="assertive" class="no-items-wrapper">
-            {{ assertiveAriaLive }}
+            <p class="no-items">
+              {{ assertiveAriaLive }}
+            </p>
           </div>
         </div>
       </NavigatorCardInner>
@@ -86,7 +88,7 @@
             :selected-tags.sync="selectedTagsModelValue"
             placeholder="Filter"
             :should-keep-open-on-blur="false"
-            :position-reversed="isLargeBreakpoint"
+            :position-reversed="isFilterReversed"
             :clear-filter-on-tag-select="false"
             class="filter-component"
             @clear="clearFilters"
@@ -97,7 +99,7 @@
           @click="store.toggleShowQuickNavigationModal()"
           v-if="enableQuickNavigation"
         >
-          <MagnifierIcon/>
+          <MagnifierIcon />
         </div>
       </div>
     </div>
@@ -460,7 +462,7 @@ export default {
     apiChangesObject() {
       return this.apiChanges || {};
     },
-    isLargeBreakpoint: ({ breakpoint }) => breakpoint === BreakpointName.large,
+    isFilterReversed: ({ breakpoint }) => breakpoint === BreakpointName.large,
     hasNodes: ({ nodesToRender }) => !!nodesToRender.length,
     totalItemsToNavigate: ({ nodesToRender }) => nodesToRender.length,
     lastActivePathItem: ({ activePath }) => last(activePath),
@@ -1089,9 +1091,11 @@ export default {
 
 $navigator-card-vertical-spacing: 8px !default;
 // unfortunately we need to hard-code the filter height
-$filter-height: 71px;
-$navigator-head-background: var(--color-fill-secondary) !default;
-$navigator-head-background-active: var(--color-fill-tertiary) !default;
+$filter-height: 73px;
+$filter-height-small: 62px;
+$navigator-head-background: var(--color-fill) !default;
+$navigator-head-background-active: var(--color-fill) !default;
+$close-icon-size: 19px;
 
 .magnifier-icon {
   height: 20px;
@@ -1117,15 +1121,18 @@ $navigator-head-background-active: var(--color-fill-tertiary) !default;
 
   .head-wrapper {
     position: relative;
+    overflow: hidden;
+    flex: 1 0 auto;
   }
 
   .navigator-head {
-    padding: 10px $card-horizontal-spacing-large;
+    padding: 0 $card-horizontal-spacing-large*2 0 $card-horizontal-spacing-large;
     background: $navigator-head-background;
     border-bottom: 1px solid var(--color-grid);
     display: flex;
     align-items: center;
-    box-sizing: border-box;
+    height: $nav-height;
+    white-space: nowrap;
 
     .badge {
       margin-top: 0;
@@ -1144,19 +1151,20 @@ $navigator-head-background-active: var(--color-fill-tertiary) !default;
       text-decoration: none;
     }
 
+    @include safe-area-left-set(padding-left, $card-horizontal-spacing-large);
+    @include safe-area-right-set(padding-right,
+      $card-horizontal-spacing-large * 2 + $close-icon-size
+    );
+
     @include breakpoint(medium, nav) {
       justify-content: center;
-      height: $nav-height;
-      padding: 14px $card-horizontal-spacing-large;
+      @include safe-area-right-set(padding-right, $card-horizontal-spacing-large);
     }
 
     @include breakpoint(small, nav) {
       height: $nav-height-small;
-      padding: 12px $card-horizontal-spacing-large;
+      padding: 0 $card-horizontal-spacing-large;
     }
-
-    @include safe-area-left-set(padding-left, $card-horizontal-spacing-large);
-    @include safe-area-right-set(padding-right, $card-horizontal-spacing-large);
   }
 
   .card-icon {
@@ -1166,37 +1174,68 @@ $navigator-head-background-active: var(--color-fill-tertiary) !default;
 }
 
 .no-items-wrapper {
+  overflow: hidden;
   color: var(--color-figure-gray-tertiary);
-  @include font-styles(body-reduced);
-  padding: var(--card-vertical-spacing) $card-horizontal-spacing-large;
+
+  .no-items {
+    @include font-styles(body-reduced);
+    padding: var(--card-vertical-spacing) $card-horizontal-spacing-large;
+    // make sure the text does not get weirdly cut
+    min-width: 200px;
+    box-sizing: border-box;
+  }
 }
 
-.close-card-mobile {
-  display: none;
+.close-card {
+  display: flex;
   position: absolute;
   z-index: 1;
-  color: var(--color-link);
   align-items: center;
   justify-content: center;
+  height: 100%;
+  right: 0;
+  padding-left: $card-horizontal-spacing-large;
+  padding-right: $nav-padding;
+
+  transition: transform $adjustable-sidebar-hide-transition-duration ease-in 0s, visibility 0s;
+
+  @include safe-area-left-set(padding-right, $nav-padding);
 
   @include breakpoint(medium, nav) {
-    display: flex;
+    right: unset;
     left: 0;
-    height: 100%;
-    padding-left: $nav-padding;
     padding-right: $nav-padding;
-
     @include safe-area-left-set(padding-left, $nav-padding);
   }
 
   @include breakpoint(small, nav) {
     padding-left: $nav-padding-small;
     padding-right: $nav-padding-small;
+    @include safe-area-left-set(padding-left, $nav-padding-small);
   }
 
   .close-icon {
-    width: 19px;
-    height: 19px;
+    width: $close-icon-size;
+    height: $close-icon-size;
+    padding: 5px;
+    margin-left: -5px;
+    margin-right: -5px;
+    border-radius: $nano-border-radius;
+  }
+
+  @include breakpoints-from(large, nav) {
+    &:hover .close-icon {
+      background: var(--color-fill-gray-quaternary);
+    }
+    // when the navigator is closed on desktop,
+    // move the button so it looks like its going to the nav
+    .sidebar-hidden & {
+      transition: transform $adjustable-sidebar-hide-transition-duration ease-in 0s,
+      visibility 0s linear $adjustable-sidebar-hide-transition-duration;
+      visibility: hidden;
+      // 2x the nav padding, 1px border, and the size of the icon
+      transform: translateX(rem($close-icon-size + 1px) + $nav-padding * 2);
+    }
   }
 }
 
@@ -1205,9 +1244,10 @@ $navigator-head-background-active: var(--color-fill-tertiary) !default;
   padding-right: 0;
   flex: 1 1 auto;
   min-height: 0;
+  height: 100%;
   @include breakpoint(medium, nav) {
     --card-vertical-spacing: 0px;
-    padding-top: $filter-height;
+    padding-top: $filter-height-small;
   }
 }
 
@@ -1215,6 +1255,8 @@ $navigator-head-background-active: var(--color-fill-tertiary) !default;
   color: var(--color-text);
   @include font-styles(body-reduced);
   font-weight: $font-weight-semibold;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .navigator-filter {
@@ -1225,6 +1267,10 @@ $navigator-head-background-active: var(--color-fill-tertiary) !default;
   display: flex;
   align-items: flex-end;
 
+  .animating &, .force-close & {
+    overflow: hidden;
+  }
+
   @include safe-area-left-set(padding-left, 30px);
   @include safe-area-right-set(padding-right, 30px);
 
@@ -1232,7 +1278,7 @@ $navigator-head-background-active: var(--color-fill-tertiary) !default;
     border: none;
     padding: 10px 20px;
     align-items: flex-start;
-    height: 62px;
+    height: $filter-height-small;
 
     @include safe-area-left-set(padding-left, 20px);
     @include safe-area-right-set(padding-right, 20px);
@@ -1282,6 +1328,8 @@ $navigator-head-background-active: var(--color-fill-tertiary) !default;
   @include breakpoint(medium, nav) {
     position: absolute;
     top: $nav-height;
+    // nudge to show the border
+    margin-top: 1px;
     bottom: auto;
     width: 100%;
   }

@@ -332,7 +332,7 @@ describe('NavigatorCard', () => {
     expect(wrapper.vm.focusedIndex).toBe(0);
   });
 
-  it('reverses the FilterInput, on mobile', () => {
+  it('reverses the FilterInput, on mobile', async () => {
     const wrapper = createWrapper({
       propsData: {
         breakpoint: BreakpointName.medium,
@@ -1217,7 +1217,7 @@ describe('NavigatorCard', () => {
 
   it('emits a `close` event', async () => {
     const wrapper = createWrapper();
-    const button = wrapper.find('.close-card-mobile');
+    const button = wrapper.find('.close-card');
     button.trigger('click');
     await flushPromises();
     expect(button.attributes('aria-label')).toBe('Close documentation navigator');
