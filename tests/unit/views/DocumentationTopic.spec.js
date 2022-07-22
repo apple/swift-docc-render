@@ -100,6 +100,9 @@ const topicData = {
       paths: ['documentation/swift'],
     },
   ],
+  source: {
+    url: 'foo.com',
+  },
   schemaVersion: {
     major: 0,
     minor: 2,
