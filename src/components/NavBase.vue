@@ -146,6 +146,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    preventFocusTrap: {
+      type: Boolean,
+      default: false,
+    },
   },
   mixins: [onIntersect],
   data() {
@@ -193,6 +197,7 @@ export default {
     document.addEventListener('click', this.handleClickOutside);
     this.handleFlashOnMount();
     await this.$nextTick();
+    if (this.preventFocusTrap) return;
     this.focusTrapInstance = new FocusTrap(this.$refs.wrapper);
   },
   beforeDestroy() {
@@ -203,6 +208,7 @@ export default {
     if (this.isOpen) {
       this.toggleScrollLock(false);
     }
+    if (this.preventFocusTrap) return;
     this.focusTrapInstance.destroy();
   },
   methods: {
@@ -243,6 +249,7 @@ export default {
       this.isTransitioning = false;
       if (this.isOpen) {
         this.$emit('opened');
+        if (this.preventFocusTrap) return;
         // toggle the scroll lock on/off if needed
         this.toggleScrollLock(true);
       } else {
@@ -315,6 +322,7 @@ export default {
     },
     onExpand() {
       this.$emit('open');
+      if (this.preventFocusTrap) return;
       // lock focus
       this.focusTrapInstance.start();
       // hide sibling elements from VO
@@ -322,6 +330,7 @@ export default {
     },
     onClose() {
       this.$emit('close');
+      if (this.preventFocusTrap) return;
       // stop the scroll lock
       this.toggleScrollLock(false);
       this.focusTrapInstance.stop();
