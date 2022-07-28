@@ -76,6 +76,13 @@ describe('fetchData', () => {
     await expect(data).toEqual(await goodFetchResponse.json());
   });
 
+  it('calls `fetch` with options', async () => {
+    window.fetch = jest.fn().mockImplementation(() => goodFetchResponse);
+    await fetchData('/data/tutorials/augmented-reality/tutorials.json', {}, { foo: 'foo' });
+    expect(window.fetch)
+      .toHaveBeenCalledWith('http://localhost/data/tutorials/augmented-reality/tutorials.json', { foo: 'foo' });
+  });
+
   it('throws non "OK" responses', async () => {
     window.fetch = jest.fn().mockImplementation(() => badFetchResponse);
     try {
@@ -163,7 +170,10 @@ describe('fetchDataForRouteEnter', () => {
     await expect(window.fetch).toHaveBeenCalledWith(new URL(
       '/data/tutorials/augmented-reality/tutorials.json',
       window.location.href,
-    ).href);
+    ).href, {
+      credentials: 'include',
+      mode: 'no-cors',
+    });
     await expect(data).toEqual(await goodFetchResponse.json());
 
     window.fetch.mockRestore();
@@ -177,7 +187,10 @@ describe('fetchDataForRouteEnter', () => {
     await expect(window.fetch).toHaveBeenCalledWith(new URL(
       '/base-prefix/data/tutorials/augmented-reality/tutorials.json',
       window.location.href,
-    ).href);
+    ).href, {
+      credentials: 'include',
+      mode: 'no-cors',
+    });
     await expect(data).toEqual(await goodFetchResponse.json());
 
     window.fetch.mockRestore();
@@ -254,7 +267,10 @@ describe('fetchDataForRouteEnter', () => {
     await expect(window.fetch).toHaveBeenLastCalledWith(new URL(
       '/data/tutorials/augmented-reality/tutorials.json',
       window.location.href,
-    ).href);
+    ).href, {
+      credentials: 'include',
+      mode: 'no-cors',
+    });
     await expect(data).toEqual(await goodFetchResponse.json());
 
     window.fetch.mockRestore();
@@ -349,7 +365,7 @@ describe('fetchIndexPathsData', () => {
     window.fetch = jest.fn().mockImplementation(() => goodFetchResponse);
 
     const data = await fetchIndexPathsData();
-    expect(fetch).toHaveBeenLastCalledWith('http://localhost/index/index.json');
+    expect(fetch).toHaveBeenLastCalledWith('http://localhost/index/index.json', undefined);
     expect(data).toEqual({ foobar: 'foobar' });
   });
 });

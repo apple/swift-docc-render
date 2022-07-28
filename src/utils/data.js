@@ -15,7 +15,7 @@ import { baseUrl } from 'docc-render/utils/theme-settings';
 import RedirectError from 'docc-render/errors/RedirectError';
 import FetchError from 'docc-render/errors/FetchError';
 
-export async function fetchData(path, params = {}) {
+export async function fetchData(path, params = {}, options) {
   function isBadResponse(response) {
     // When this is running in an IDE target, the `fetch` API will be used with
     // custom URL schemes. Right now, WebKit will return successful responses
@@ -36,7 +36,7 @@ export async function fetchData(path, params = {}) {
     url.search = queryString;
   }
 
-  const response = await fetch(url.href);
+  const response = await fetch(url.href, options);
   if (isBadResponse(response)) {
     throw response;
   }
@@ -77,7 +77,10 @@ export async function fetchDataForRouteEnter(to, from, next) {
 
   let data;
   try {
-    data = await fetchData(path, to.query);
+    data = await fetchData(path, to.query, {
+      credentials: 'include',
+      mode: 'no-cors',
+    });
   } catch (error) {
     if (process.env.VUE_APP_TARGET === 'ide') {
       console.error(error);
