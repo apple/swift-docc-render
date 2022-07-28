@@ -19,8 +19,8 @@ export default {
   setFlattenIndex(flattenIndex) {
     this.state.flattenIndex = flattenIndex;
   },
-  toggleShowQuickNavigationModal() {
-    this.state.showQuickNavigation = !this.state.showQuickNavigation;
+  toggleShowQuickNavigationModal(toggle) {
+    this.state.showQuickNavigation = toggle;
   },
 
 };

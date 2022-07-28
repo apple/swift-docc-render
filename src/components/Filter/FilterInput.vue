@@ -16,7 +16,7 @@
     :aria-labelledby="searchAriaLabelledBy"
     :class="{ 'focus': showSuggestedTags }"
     @blur.capture="handleBlur"
-    @focus.capture="showSuggestedTags = true"
+    @focus.capture="showSuggestedTags = true; $emit('toggleIsFilterInputFocused')"
   >
     <div :class="['filter__wrapper', { 'filter__wrapper--reversed': positionReversed }]">
       <div class="filter__top-wrapper">
@@ -123,6 +123,8 @@ import { pluralize } from 'docc-render/utils/strings';
 import multipleSelection from 'docc-render/mixins/multipleSelection';
 import handleScrollbar from 'docc-render/mixins/handleScrollbar';
 import FilterIcon from 'theme/components/Icons/FilterIcon.vue';
+import QuickNavigationStore from 'docc-render/stores/QuickNavigationStore';
+import { getSetting } from 'docc-render/utils/theme-settings';
 import TagList from './TagList.vue';
 
 // Max number of tags to show
@@ -207,6 +209,7 @@ export default {
       SuggestedTagsId,
       AXinputProperties,
       showSuggestedTags: false,
+      store: QuickNavigationStore,
     };
   },
   computed: {
@@ -275,6 +278,9 @@ export default {
         focus: focusTagHandler,
         'paste-tags': handlePaste,
       }
+    ),
+    enableQuickNavigation: () => (
+      getSetting(['features', 'docs', 'quickNavigation', 'enable'], false)
     ),
   },
   watch: {
@@ -363,7 +369,7 @@ export default {
       if (target && target.matches && target.matches('button, input, ul') && this.$el.contains(target)) return;
       // Wait for mousedown to send event listeners
       await this.$nextTick();
-
+      this.$emit('toggleIsFilterInputFocused');
       this.resetActiveTags();
 
       if (this.preventedBlur) {
@@ -405,12 +411,16 @@ export default {
       this.focusInput();
     }
   },
+  provide() {
+    return { store: this.store };
+  },
 };
 </script>
 
 <style scoped lang="scss">
 @import 'docc-render/styles/_core.scss';
 
+$quick-navigation-icon: rem(20px);
 $tag-outline-padding: 4px !default;
 $input-vertical-padding: rem(13px) !default;
 $input-height: rem(28px);
@@ -429,6 +439,29 @@ $input-height: rem(28px);
   border-radius: $small-border-radius + 1;
   @include on-keyboard-focus() {
     outline: none;
+  }
+  &__quick-navigation-container {
+    padding: 0 10px 0 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    .filter__quick-navigation-icon {
+      height: $quick-navigation-icon;
+      width: $quick-navigation-icon;
+      margin: auto;
+      color: var(--input-text);
+      border: solid 1px;
+      border-radius: $border-radius;
+      border-color: var(--color-grid);
+      display: flex;
+      align-items: center;
+      .filter__open-modal-key {
+        text-decoration: none;
+        margin: auto;
+        font-size: rem(12px);
+      }
+    }
   }
 
   &__top-wrapper {

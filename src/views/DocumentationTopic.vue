@@ -9,10 +9,17 @@
 -->
 
 <template>
-  <div :class="{ 'modal-open': quickNavigationStore.state.showQuickNavigation }">
-    <div v-show="quickNavigationStore.state.showQuickNavigation">
-      <QuickNavigationModal/>
-    </div>
+  <div>
+    <PortalTarget name="modal-destination" multiple />
+    <GenericModal
+      :showClose=false
+      :visible="quickNavigationStore.state.showQuickNavigation"
+      :isFullscreen=true
+      :codeBackgroundColorOverride="'transparent'"
+      :theme="'code'"
+    >
+       <QuickNavigationModal />
+    </GenericModal>
     <CodeTheme class="doc-topic-view">
       <template v-if="topicData">
         <Nav
@@ -84,6 +91,7 @@ import {
   fetchDataForRouteEnter,
   shouldFetchDataForRouteUpdate,
 } from 'docc-render/utils/data';
+import { PortalTarget } from 'portal-vue';
 import DocumentationTopic from 'theme/components/DocumentationTopic.vue';
 import DocumentationTopicStore from 'docc-render/stores/DocumentationTopicStore';
 import CodeTheme from 'docc-render/components/Tutorial/CodeTheme.vue';
@@ -96,6 +104,7 @@ import QuickNavigationModal from 'docc-render/components/Navigator/QuickNavigati
 import AdjustableSidebarWidth from 'docc-render/components/AdjustableSidebarWidth.vue';
 import Navigator from 'docc-render/components/Navigator.vue';
 import DocumentationNav from 'theme/components/DocumentationTopic/DocumentationNav.vue';
+import GenericModal from 'docc-render/components/GenericModal.vue';
 import { compareVersions, combineVersions } from 'docc-render/utils/schema-version-check';
 import { BreakpointName } from 'docc-render/utils/breakpoints';
 import QuickNavigationStore from '../stores/QuickNavigationStore';
@@ -113,6 +122,8 @@ export default {
     CodeTheme,
     Nav: DocumentationNav,
     QuickNavigationModal,
+    GenericModal,
+    PortalTarget,
   },
   mixins: [performanceMetrics, onPageLoadScrollToFragment],
   data() {
@@ -391,10 +402,6 @@ export default {
       border-right: 1px solid var(--color-grid);
     }
   }
-}
-.modal-open {
-  position: fixed;
-  width: 100%
 }
 
 .topic-wrapper {

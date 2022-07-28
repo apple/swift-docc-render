@@ -134,7 +134,6 @@ describe('Navigator', () => {
       activePath: [references.first.url, references.second.url, mocks.$route.path],
       // will assert in another test
       children: expect.any(Array),
-      enableQuickNavigation: false,
       type: TopicTypes.module,
       technology: technology.title,
       technologyPath: technology.path,
@@ -187,7 +186,6 @@ describe('Navigator', () => {
       activePath: [references.first.url, references.second.url, mocks.$route.path],
       // will assert in another test
       children: [],
-      enableQuickNavigation: false,
       type: TopicTypes.module,
       technology: fallbackTechnology.title,
       technologyPath: fallbackTechnology.url,

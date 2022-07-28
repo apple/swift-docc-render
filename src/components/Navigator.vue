@@ -25,7 +25,6 @@
       :error-fetching="errorFetching"
       :breakpoint="breakpoint"
       :api-changes="apiChanges"
-      :enableQuickNavigation="enableQuickNavigation"
       @close="$emit('close')"
     />
     <NavigatorCardInner v-else class="loading-placeholder">
