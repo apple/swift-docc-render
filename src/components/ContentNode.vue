@@ -9,6 +9,8 @@
 -->
 
 <script>
+import { shouldInactivateRef } from 'docc-render/utils/references';
+import AppStore from 'docc-render/stores/AppStore';
 import referencesProvider from 'docc-render/mixins/referencesProvider';
 import Aside from './ContentNode/Aside.vue';
 import CodeListing from './ContentNode/CodeListing.vue';
@@ -118,9 +120,13 @@ const TabNavigatorVerticalThreshold = 7;
 // and any of its children by mapping each node `type` to a given Vue component
 //
 // Note: A plain string of text is returned for nodes with `type="text"`
-function renderNode(createElement, references) {
+function renderNode(createElement, context = {}) {
+  const {
+    includedArchiveIdentifiers = [],
+    references = {},
+  } = context;
   const renderChildren = children => children.map(
-    renderNode(createElement, references),
+    renderNode(createElement, context),
   );
 
   const renderListItems = items => items.map(item => (
@@ -465,12 +471,14 @@ function renderNode(createElement, references) {
       const titleInlineContent = node.overridingTitleInlineContent
         || reference.titleInlineContent;
       const titlePlainText = node.overridingTitle || reference.title;
+      const isActive = node.isActive ?? true;
+      const isInactive = shouldInactivateRef(node.identifier, { includedArchiveIdentifiers });
       return createElement(Reference, {
         props: {
           url: reference.url,
           kind: reference.kind,
           role: reference.role,
-          isActive: node.isActive,
+          isActive: isActive && !isInactive,
           ideTitle: reference.ideTitle,
           titleStyle: reference.titleStyle,
           hasInlineFormatting: !!titleInlineContent,
@@ -521,11 +529,14 @@ export default {
   name: 'ContentNode',
   constants: { TableHeaderStyle, TableColumnAlignments },
   mixins: [referencesProvider],
+  data: () => ({
+    appState: AppStore.state,
+  }),
   render: function render(createElement) {
     // Dynamically map each content item and any children to their
     // corresponding components, and wrap the whole tree in a <div>
     return createElement(this.tag, { class: 'content' }, (
-      this.content.map(renderNode(createElement, this.references), this)
+      this.content.map(renderNode(createElement, this.context), this)
     ));
   },
   props: {
@@ -691,6 +702,14 @@ export default {
         return text;
       }, '').trim();
     },
+    includedArchiveIdentifiers: ({ appState }) => appState.includedArchiveIdentifiers,
+    context: ({
+      includedArchiveIdentifiers = [],
+      references = {},
+    }) => ({
+      includedArchiveIdentifiers,
+      references,
+    }),
   },
   BlockType,
   InlineType,
